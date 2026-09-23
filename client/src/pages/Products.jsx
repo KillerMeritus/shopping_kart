@@ -1,15 +1,12 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { axiosInstance } from "../axiosCalls/axios";
 import ProductCard from "../components/ProductCard";
-import { useNavigate } from "react-router-dom";
 
 const Products = () => {
     const [products, setProducts] = useState([]);
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("");
-
-    const navigate = useNavigate();
+    const [sort, setSort] = useState("");
 
     const params = new URLSearchParams();
 
@@ -19,6 +16,10 @@ const Products = () => {
 
     if (category) {
         params.append("category", category);
+    }
+
+    if (sort) {
+        params.append("sort", sort);
     }
 
     const fetchProducts = async () => {
@@ -35,7 +36,7 @@ const Products = () => {
 
     useEffect(() => {
         fetchProducts();
-    }, [search, category]);
+    }, [search, category, sort]);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -52,9 +53,10 @@ const Products = () => {
                         Discover products from our catalog
                     </p>
 
-                    {/* Search & Filter */}
+                    {/* Search, Filter & Sort */}
                     <div className="flex flex-col md:flex-row gap-4 mt-6">
 
+                        {/* Search */}
                         <input
                             type="text"
                             placeholder="Search products..."
@@ -63,6 +65,7 @@ const Products = () => {
                             className="flex-1 border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
                         />
 
+                        {/* Category */}
                         <select
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
@@ -75,6 +78,21 @@ const Products = () => {
                             <option value="Home">Home</option>
                             <option value="Furniture">Furniture</option>
                             <option value="Stationery">Stationery</option>
+                        </select>
+
+                        {/* Sort */}
+                        <select
+                            value={sort}
+                            onChange={(e) => setSort(e.target.value)}
+                            className="border border-gray-300 rounded-lg px-4 py-3 bg-white outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <option value="">Sort By</option>
+                            <option value="price_asc">
+                                Price: Low to High
+                            </option>
+                            <option value="price_desc">
+                                Price: High to Low
+                            </option>
                         </select>
 
                     </div>

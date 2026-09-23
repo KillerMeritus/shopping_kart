@@ -14,7 +14,7 @@ const getProducts = async (req, res) => {
     try {
         const filter = {};
 
-        const { search, category } = req.query;
+        const { search, category , sort } = req.query;
 
         if (search) {
             filter.name = {
@@ -27,7 +27,20 @@ const getProducts = async (req, res) => {
             filter.category = category;
         }
 
-        const products = await productModel.find(filter);
+        let query = productModel.find(filter);
+
+        if (sort === "price_asc") {
+            query = query.sort({ price: 1 });
+        }
+
+        if (sort === "price_desc") {
+            query = query.sort({ price: -1 });
+        }
+
+        const products = await query;
+
+
+
 
         res.status(200).json(products);
     } catch (err) {
