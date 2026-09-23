@@ -6,6 +6,8 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Navbar from "./components/navbar";
 import RootRoute from "./components/RootRoute";
+import Products from "./pages/Products";
+import ProductDetails from "./pages/ProductDetails";
 
 import PrivateRoute from "./components/PrivateRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -55,6 +57,27 @@ function App() {
                 </PrivateRoute>
               }
             />
+
+            <Route 
+            path="/products" 
+            element={
+            <PrivateRoute>
+
+              <Products />
+            </PrivateRoute>
+             
+            }
+            />
+            <Route
+                path="/products/:id"
+                element={
+                <PrivateRoute>
+
+                  <ProductDetails />
+                </PrivateRoute>
+                }
+            />
+
 
           </Routes>
         </main>
