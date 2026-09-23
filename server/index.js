@@ -2,6 +2,7 @@ import express from 'express'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import customerRoutes from './routes/customer.routes.js'
+import productsRoutes from './routes/products.routes.js'
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -34,7 +35,9 @@ app.get('/',(req,res)=>{
     res.send("server is ok")
 })
 
-app.use('/customer',customerRoutes)
+app.use('/customers',customerRoutes)
+app.use('/products',productsRoutes)
+
 
 
 app.listen(port,()=>{
