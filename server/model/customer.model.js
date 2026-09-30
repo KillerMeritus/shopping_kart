@@ -18,6 +18,13 @@ const customerSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    wishlist:{ 
+    type : [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'product'
+    }],
+    default : []
+    }
 },
     {
         timestaps: true

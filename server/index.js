@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import customerRoutes from './routes/customer.routes.js'
 import productsRoutes from './routes/products.routes.js'
+import wishlistRoutes from './routes/wishlist.routes.js'
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -37,6 +38,7 @@ app.get('/',(req,res)=>{
 
 app.use('/customers',customerRoutes)
 app.use('/products',productsRoutes)
+app.use('/wishlist',wishlistRoutes)
 
 
 
