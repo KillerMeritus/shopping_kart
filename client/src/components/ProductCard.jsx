@@ -1,9 +1,72 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { axiosInstance } from "../axiosCalls/axios";
 
 const ProductCard = ({ product }) => {
 
     const navigate = useNavigate();
+
+    const [wishlistStatus, setWishlistStatus] = useState("default");
+    const [wishlistError, setWishlistError] = useState("");
+
+    // Check whether product is already in wishlist
+    useEffect(() => {
+
+        const checkWishlist = async () => {
+
+            try {
+                const response = await axiosInstance.get("/wishlist");
+
+                const wishlist = response.data.wishlist;
+
+                const alreadyAdded = wishlist.some(
+                    item => item._id === product._id
+                );
+
+                if (alreadyAdded) {
+                    setWishlistStatus("added");
+                }
+
+            } catch (error) {
+                console.log("Failed to fetch wishlist", error);
+            }
+        };
+
+        checkWishlist();
+
+    }, [product._id]);
+
+
+    const handleAddToWishlist = async () => {
+
+        if (
+            wishlistStatus === "saving" ||
+            wishlistStatus === "added"
+        ) {
+            return;
+        }
+
+        setWishlistStatus("saving");
+        setWishlistError("");
+
+        try {
+
+            await axiosInstance.post(`/wishlist/${product._id}`);
+
+            setWishlistStatus("added");
+
+        } catch (error) {
+
+            setWishlistStatus("default");
+
+            setWishlistError(
+                error.response?.data?.message ||
+                "Failed to add product to wishlist"
+            );
+        }
+    };
+
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200">
 
@@ -46,10 +109,33 @@ const ProductCard = ({ product }) => {
                         : "Out of stock"}
                 </p>
 
-                {/* Button */}
+                {/* Wishlist */}
                 <button
-                    onClick={()=> navigate(`/products/${product._id}`)}
-                    className="w-full mt-5 bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                    onClick={handleAddToWishlist}
+                    disabled={
+                        wishlistStatus === "saving" ||
+                        wishlistStatus === "added"
+                    }
+                    className="w-full mt-4 border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:cursor-not-allowed"
+                >
+                    {wishlistStatus === "saving"
+                        ? "⏳ Saving..."
+                        : wishlistStatus === "added"
+                        ? "♥ Added to Wishlist"
+                        : "♡ Add to Wishlist"}
+                </button>
+
+                {/* Wishlist Error */}
+                {wishlistError && (
+                    <p className="text-sm text-red-600 mt-2">
+                        {wishlistError}
+                    </p>
+                )}
+
+                {/* View Details */}
+                <button
+                    onClick={() => navigate(`/products/${product._id}`)}
+                    className="w-full mt-3 bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
                 >
                     View Details
                 </button>

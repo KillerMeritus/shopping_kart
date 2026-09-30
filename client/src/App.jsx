@@ -8,6 +8,7 @@ import Navbar from "./components/navbar";
 import RootRoute from "./components/RootRoute";
 import Products from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
+import Wishlist from "./pages/Wishlist";
 
 import PrivateRoute from "./components/PrivateRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -16,14 +17,15 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900 selection:bg-indigo-500 selection:text-white">
+
         <main className="flex-1">
+
           <Routes>
 
+            {/* Root */}
             <Route
               path="/"
-              element={
-              <RootRoute/>
-              }
+              element={<RootRoute />}
             />
 
             {/* Public Routes */}
@@ -45,7 +47,7 @@ function App() {
               }
             />
 
-            {/* Private Route */}
+            {/* Home */}
             <Route
               path="/home"
               element={
@@ -58,29 +60,49 @@ function App() {
               }
             />
 
-            <Route 
-            path="/products" 
-            element={
-            <PrivateRoute>
-
-              <Products />
-            </PrivateRoute>
-             
-            }
-            />
+            {/* Products */}
             <Route
-                path="/products/:id"
-                element={
+              path="/products"
+              element={
                 <PrivateRoute>
-
-                  <ProductDetails />
+                  <>
+                    <Navbar />
+                    <Products />
+                  </>
                 </PrivateRoute>
-                }
+              }
             />
 
+            {/* Product Details */}
+            <Route
+              path="/products/:id"
+              element={
+                <PrivateRoute>
+                  <>
+                    <Navbar />
+                    <ProductDetails />
+                  </>
+                </PrivateRoute>
+              }
+            />
+
+            {/* Wishlist */}
+            <Route
+              path="/wishlist"
+              element={
+                <PrivateRoute>
+                  <>
+                    <Navbar />
+                    <Wishlist />
+                  </>
+                </PrivateRoute>
+              }
+            />
 
           </Routes>
+
         </main>
+
       </div>
     </Router>
   );
