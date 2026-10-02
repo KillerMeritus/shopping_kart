@@ -3,10 +3,14 @@ import "./Login.css";
 import React, { useState } from "react";
 import { axiosInstance } from "../axiosCalls/axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { fetchCart } from "../redux/cartSlice";
+import { fetchWishlist } from "../redux/wishlistSlice";
 
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -37,6 +41,8 @@ const Login = () => {
       console.log(res);
       console.log("User Logged In");
 
+      dispatch(fetchCart());
+      dispatch(fetchWishlist());
       setLoader(false);
 
       navigate("/home");

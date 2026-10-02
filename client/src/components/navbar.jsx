@@ -1,14 +1,21 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import { axiosInstance } from "../axiosCalls/axios";
+import { selectCartTotalCount, resetCart } from "../redux/cartSlice";
+import { selectWishlistCount, resetWishlist } from "../redux/wishlistSlice";
 
 const Navbar = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const cartCount = useSelector(selectCartTotalCount);
+    const wishlistCount = useSelector(selectWishlistCount);
 
     const handleLogout = async () => {
         try {
             await axiosInstance.post("/customers/logout");
-
+            dispatch(resetCart());
+            dispatch(resetWishlist());
             navigate("/login");
         } catch (error) {
             console.error(
@@ -51,7 +58,14 @@ const Navbar = () => {
                         to="/wishlist"
                         className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
                     >
-                        Wishlist ❤️
+                        Wishlist ({wishlistCount})
+                    </Link>
+
+                    <Link
+                        to="/cart"
+                        className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+                    >
+                        Cart ({cartCount})
                     </Link>
 
                     <button

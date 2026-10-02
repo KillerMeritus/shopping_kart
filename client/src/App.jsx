@@ -9,6 +9,7 @@ import RootRoute from "./components/RootRoute";
 import Products from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
 import Wishlist from "./pages/Wishlist";
+import Cart from "./pages/Cart";
 
 import PrivateRoute from "./components/PrivateRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -94,6 +95,19 @@ function App() {
                   <>
                     <Navbar />
                     <Wishlist />
+                  </>
+                </PrivateRoute>
+              }
+            />
+
+            {/* Cart */}
+            <Route
+              path="/cart"
+              element={
+                <PrivateRoute>
+                  <>
+                    <Navbar />
+                    <Cart />
                   </>
                 </PrivateRoute>
               }

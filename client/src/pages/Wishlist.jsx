@@ -1,45 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { axiosInstance } from "../axiosCalls/axios";
+import { useSelector, useDispatch } from "react-redux";
+import {
+    selectWishlistItems,
+    selectWishlistLoading,
+    selectWishlistError,
+    fetchWishlist,
+    removeFromWishlist
+} from "../redux/wishlistSlice";
 
 const Wishlist = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    const [wishlist, setWishlist] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
-
-    const fetchWishlist = async () => {
-        setLoading(true);
-        setError(false);
-
-        try {
-            const response = await axiosInstance.get("/wishlist");
-
-            setWishlist(response.data.wishlist);
-        } catch (error) {
-            setError(true);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const wishlist = useSelector(selectWishlistItems);
+    const loading = useSelector(selectWishlistLoading);
+    const error = useSelector(selectWishlistError);
 
     useEffect(() => {
-        fetchWishlist();
-    }, []);
+        dispatch(fetchWishlist());
+    }, [dispatch]);
 
     const handleRemove = async (productId) => {
-        try {
-            await axiosInstance.delete(`/wishlist/${productId}`);
-
-            setWishlist((prevWishlist) =>
-                prevWishlist.filter(
-                    (product) => product._id !== productId
-                )
-            );
-        } catch (error) {
-            setError(true);
-        }
+        dispatch(removeFromWishlist(productId));
     };
 
     // Loading State

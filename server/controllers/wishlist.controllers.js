@@ -88,5 +88,65 @@ export const removeFromWishlist = async (req, res) => {
     });
 };
 
+//  Toggle Wishlist
+export const toggleWishlist = async (req, res) => {
+    try {
+        const { productId } = req.params;
+
+        if (!mongoose.isValidObjectId(productId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid productId"
+            });
+        }
+
+        const product = await productModel.findById(productId);
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        if (!req.customer.wishlist) {
+            req.customer.wishlist = [];
+        }
+
+        const exists = req.customer.wishlist.some(
+            (item) => (item._id || item).toString() === productId
+        );
+
+        let isAdded = false;
+        if (exists) {
+            req.customer.wishlist = req.customer.wishlist.filter(
+                (item) => (item._id || item).toString() !== productId
+            );
+            isAdded = false;
+        } else {
+            req.customer.wishlist.push(productId);
+            isAdded = true;
+        }
+
+        await req.customer.save();
+        await req.customer.populate("wishlist");
+
+        return res.status(200).json({
+            success: true,
+            message: isAdded
+                ? "Product added to wishlist"
+                : "Product removed from wishlist",
+            isAdded,
+            count: req.customer.wishlist.length,
+            wishlist: req.customer.wishlist
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
 
 

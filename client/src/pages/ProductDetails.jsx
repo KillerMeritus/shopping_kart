@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { axiosInstance } from "../axiosCalls/axios";
+import { addToCart, selectCartItems } from "../redux/cartSlice";
 
 const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const cartItems = useSelector(selectCartItems);
+    const cartItem = cartItems.find(
+        (item) => (item.product?._id || item.product) === id
+    );
+    const isInCart = Boolean(cartItem);
 
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [addingToCart, setAddingToCart] = useState(false);
+    const [cartError, setCartError] = useState("");
 
     const getProduct = async () => {
         try {
@@ -63,6 +74,29 @@ const ProductDetails = () => {
             </div>
         );
     }
+
+    const handleAddToCart = async () => {
+        if (addingToCart || product.stock === 0) return;
+
+        if (cartItem && cartItem.quantity >= product.stock) {
+            setCartError("Reached maximum available stock");
+            return;
+        }
+
+        setAddingToCart(true);
+        setCartError("");
+
+        try {
+            const resultAction = await dispatch(addToCart(product._id));
+            if (addToCart.rejected.match(resultAction)) {
+                setCartError(resultAction.payload || "Failed to add to cart");
+            }
+        } catch (err) {
+            setCartError("Failed to add to cart");
+        } finally {
+            setAddingToCart(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-4">
@@ -138,13 +172,30 @@ const ProductDetails = () => {
 
                             {/* Add to Cart */}
                             <button
-                                disabled={product.stock === 0}
+                                onClick={handleAddToCart}
+                                disabled={
+                                    addingToCart ||
+                                    product.stock === 0 ||
+                                    (cartItem && cartItem.quantity >= product.stock)
+                                }
                                 className="mt-8 w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-semibold transition"
                             >
-                                {product.stock > 0
-                                    ? "Add to Cart"
-                                    : "Out of Stock"}
+                                {addingToCart
+                                    ? "Adding..."
+                                    : product.stock === 0
+                                    ? "Out of Stock"
+                                    : cartItem && cartItem.quantity >= product.stock
+                                    ? "Max Stock in Cart"
+                                    : isInCart
+                                    ? "Add Another"
+                                    : "Add to Cart"}
                             </button>
+
+                            {cartError && (
+                                <p className="text-sm text-red-600 mt-2 text-center">
+                                    {cartError}
+                                </p>
+                            )}
 
                         </div>
                     </div>
