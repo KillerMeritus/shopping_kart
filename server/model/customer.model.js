@@ -43,7 +43,7 @@ const customerSchema = mongoose.Schema({
     ]
 },
     {
-        timestaps: true
+        timestamps: true
     }
 )
 

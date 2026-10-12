@@ -10,6 +10,9 @@ import Products from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
 import Wishlist from "./pages/Wishlist";
 import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import OrderSuccess from "./pages/OrderSuccess";
+import Orders from "./pages/Orders";
 
 import PrivateRoute from "./components/PrivateRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -113,6 +116,56 @@ function App() {
               }
             />
 
+            {/* Checkout */}
+            <Route
+              path="/checkout"
+              element={
+                <PrivateRoute>
+                  <>
+                    <Navbar />
+                    <Checkout />
+                  </>
+                </PrivateRoute>
+              }
+            />
+
+            {/* Order Confirmation */}
+            <Route
+              path="/order-success/:id"
+              element={
+                <PrivateRoute>
+                  <>
+                    <Navbar />
+                    <OrderSuccess />
+                  </>
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/orders/:id"
+              element={
+                <PrivateRoute>
+                  <>
+                    <Navbar />
+                    <OrderSuccess />
+                  </>
+                </PrivateRoute>
+              }
+            />
+
+            {/* My Orders List */}
+            <Route
+              path="/orders"
+              element={
+                <PrivateRoute>
+                  <>
+                    <Navbar />
+                    <Orders />
+                  </>
+                </PrivateRoute>
+              }
+            />
           </Routes>
 
         </main>

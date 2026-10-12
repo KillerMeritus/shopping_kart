@@ -8,7 +8,8 @@ import {
     selectCartTotalCount,
     selectCartSubtotal,
     updateCartQuantity,
-    removeFromCart
+    removeFromCart,
+    fetchCart
 } from "../redux/cartSlice";
 
 const Cart = () => {
@@ -52,7 +53,7 @@ const Cart = () => {
     };
 
     const handleCheckout = () => {
-        alert("Proceeding to checkout! (Ready for next lab)");
+        navigate("/checkout");
     };
 
     // 1. Loading State
@@ -126,8 +127,8 @@ const Cart = () => {
                         {cartError}
                     </div>
                 )}
-                    /* Cart Layout */
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Cart Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                         {/* Cart Items List */}
                         <div className="lg:col-span-2 space-y-4">
                             {cartItems.map((item) => {
