@@ -16,7 +16,7 @@ const productSchema = mongoose.Schema({
     },
     category:{
         type:String,
-        reqired: true
+        required: true
     },
     image: {
         type:String,
@@ -30,7 +30,7 @@ const productSchema = mongoose.Schema({
     }
 },
     {
-        timestaps: true
+        timestamps: true
     }
 
 )

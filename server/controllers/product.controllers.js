@@ -2,11 +2,70 @@ import productModel from "../model/product.model.js";
 
 const createProduct = async (req, res) => {
     try {
-        const product = await productModel.create(req.body);
+        const productData = { ...req.body };
 
+        if (req.file) {
+            productData.image = req.file.path || req.file.secure_url;
+        }
+
+        if (productData.price !== undefined) {
+            productData.price = Number(productData.price);
+        }
+
+        if (productData.stock !== undefined) {
+            productData.stock = Number(productData.stock);
+        }
+
+        if (!productData.image) {
+            return res.status(400).json({
+                message: "Product image is required (either file upload or image URL)"
+            });
+        }
+
+        const product = await productModel.create(productData);
         res.status(201).json(product);
     } catch (err) {
-        res.status(400).json(err);
+        res.status(400).json({
+            message: err.message || "Failed to create product",
+            error: err
+        });
+    }
+};
+
+const updateProduct = async (req, res) => {
+    try {
+        const updateData = { ...req.body };
+
+        if (req.file) {
+            updateData.image = req.file.path || req.file.secure_url;
+        }
+
+        if (updateData.price !== undefined) {
+            updateData.price = Number(updateData.price);
+        }
+
+        if (updateData.stock !== undefined) {
+            updateData.stock = Number(updateData.stock);
+        }
+
+        const product = await productModel.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true, runValidators: true }
+        );
+
+        if (!product) {
+            return res.status(404).json({
+                message: "Product not found"
+            });
+        }
+
+        res.status(200).json(product);
+    } catch (err) {
+        res.status(400).json({
+            message: err.message || "Failed to update product",
+            error: err
+        });
     }
 };
 
@@ -66,4 +125,4 @@ const getProduct = async (req, res) => {
     }
 };
 
-export { createProduct, getProducts , getProduct};
+export { createProduct, getProducts, getProduct, updateProduct };
