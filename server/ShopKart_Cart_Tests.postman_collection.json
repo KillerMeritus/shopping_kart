@@ -1,0 +1,419 @@
+{
+  "info": {
+    "name": "ShopKart — Cart Test Plan (Tests 1–7)",
+    "description": "Matches the Test Plan from Lab 1.\n\n▶ HOW TO USE:\n1. Import this file into Postman.\n2. Run the collection with Collection Runner (▶ Run button) in ORDER.\n3. Step 0 (Login) auto-saves the cookie + productId for all subsequent tests.\n\n⚠️ Prerequisites:\n- Server running on http://localhost:1001\n- At least ONE product seeded in the database",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+
+  "variable": [
+    { "key": "baseUrl",   "value": "http://localhost:1001" },
+    { "key": "token",     "value": "" },
+    { "key": "productId", "value": "" }
+  ],
+
+  "item": [
+    {
+      "name": "SETUP",
+      "item": [
+        {
+          "name": "Setup 1 — Register Test User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Register succeeds (201)', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/customers/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Cart Test User\",\n  \"email\": \"carttest_{{$timestamp}}@shopkart.com\",\n  \"password\": \"password123\",\n  \"phone\": \"9876543210\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Setup 2 — Login and Save Cookie",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login succeeds (200)', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const cookie = pm.cookies.get('token');",
+                  "if (cookie) {",
+                  "    pm.collectionVariables.set('token', cookie);",
+                  "    console.log('Token saved from cookie');",
+                  "} else {",
+                  "    const body = pm.response.json();",
+                  "    if (body.token) {",
+                  "        pm.collectionVariables.set('token', body.token);",
+                  "        console.log('Token saved from body');",
+                  "    } else {",
+                  "        console.warn('No token found — auth tests will fail');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/customers/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"PASTE_EMAIL_FROM_SETUP_1_HERE@shopkart.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Setup 3 — Get First Product ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Products endpoint returns 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "const products = body.products || body;",
+                  "",
+                  "pm.test('At least one product exists in DB', () => {",
+                  "    pm.expect(products.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "if (products && products.length > 0) {",
+                  "    pm.collectionVariables.set('productId', products[0]._id);",
+                  "    console.log('productId saved:', products[0]._id);",
+                  "    console.log('Product:', products[0].name, '| Stock:', products[0].stock);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "CART TESTS",
+      "item": [
+        {
+          "name": "Test 1 — Add New Item (qty should be 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test('success is true', () => {",
+                  "    pm.expect(body.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Cart is not empty', () => {",
+                  "    pm.expect(body.cart).to.be.an('array').that.is.not.empty;",
+                  "});",
+                  "",
+                  "const productId = pm.collectionVariables.get('productId');",
+                  "const addedItem = body.cart.find(item => {",
+                  "    const id = item.product?._id || item.product;",
+                  "    return id.toString() === productId;",
+                  "});",
+                  "",
+                  "pm.test('Item quantity is 1 (new item)', () => {",
+                  "    pm.expect(addedItem).to.exist;",
+                  "    pm.expect(addedItem.quantity).to.equal(1);",
+                  "});",
+                  "",
+                  "console.log('Test 1 — quantity:', addedItem?.quantity);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/cart/{{productId}}",
+            "description": "Adds the product for the first time. Expected quantity = 1."
+          }
+        },
+
+        {
+          "name": "Test 2 — Add Same Item Again (qty should be 2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "const productId = pm.collectionVariables.get('productId');",
+                  "const item = body.cart.find(i => {",
+                  "    const id = i.product?._id || i.product;",
+                  "    return id.toString() === productId;",
+                  "});",
+                  "",
+                  "pm.test('Quantity incremented to 2 (no duplicate row)', () => {",
+                  "    pm.expect(item).to.exist;",
+                  "    pm.expect(item.quantity).to.equal(2);",
+                  "});",
+                  "",
+                  "pm.test('Cart has no duplicate entries for same product', () => {",
+                  "    const dupes = body.cart.filter(i => {",
+                  "        const id = i.product?._id || i.product;",
+                  "        return id.toString() === productId;",
+                  "    });",
+                  "    pm.expect(dupes.length).to.equal(1);",
+                  "});",
+                  "",
+                  "console.log('Test 2 — quantity:', item?.quantity);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/cart/{{productId}}",
+            "description": "Adds the SAME product again. Expected: quantity becomes 2, NOT a new row."
+          }
+        },
+
+        {
+          "name": "Test 3 — Get Cart (populated product info)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('Cart array exists', () => {",
+                  "    pm.expect(body.cart).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Cart has at least 1 item', () => {",
+                  "    pm.expect(body.cart.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "const firstItem = body.cart[0];",
+                  "pm.test('Product is populated (not just an ID string)', () => {",
+                  "    pm.expect(firstItem.product).to.be.an('object');",
+                  "    pm.expect(firstItem.product).to.have.property('name');",
+                  "    pm.expect(firstItem.product).to.have.property('price');",
+                  "});",
+                  "",
+                  "pm.test('Each cart item has a quantity field', () => {",
+                  "    body.cart.forEach(item => {",
+                  "        pm.expect(item).to.have.property('quantity');",
+                  "        pm.expect(item.quantity).to.be.a('number');",
+                  "    });",
+                  "});",
+                  "",
+                  "console.log('Test 3 — Cart items:', body.cart.length);",
+                  "console.log('First item:', firstItem?.product?.name, 'qty:', firstItem?.quantity);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/cart",
+            "description": "Fetches the cart. Product field must be a full object (populated), not just an ObjectId."
+          }
+        },
+
+        {
+          "name": "Test 4 — Update Quantity to 3 (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "const productId = pm.collectionVariables.get('productId');",
+                  "const item = body.cart.find(i => {",
+                  "    const id = i.product?._id || i.product;",
+                  "    return id.toString() === productId;",
+                  "});",
+                  "",
+                  "pm.test('Quantity updated to 3', () => {",
+                  "    pm.expect(item.quantity).to.equal(3);",
+                  "});",
+                  "",
+                  "console.log('Test 4 — updated quantity:', item?.quantity);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/cart/{{productId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}"
+            },
+            "description": "Updates the quantity of the item to 3. Expected: 200 with updated cart."
+          }
+        },
+
+        {
+          "name": "Test 5 — Exceed Stock — expect 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('success is false', () => {",
+                  "    pm.expect(body.success).to.be.false;",
+                  "});",
+                  "",
+                  "pm.test('Error message mentions stock', () => {",
+                  "    pm.expect(body.message.toLowerCase()).to.include('stock');",
+                  "});",
+                  "",
+                  "console.log('Test 5 — 400 received. Message:', body.message);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/cart/{{productId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 999999\n}"
+            },
+            "description": "Sends an impossibly large quantity. Expected: 400 with stock error message."
+          }
+        },
+
+        {
+          "name": "Test 6 — Remove Item from Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "const productId = pm.collectionVariables.get('productId');",
+                  "",
+                  "pm.test('Removed item is no longer in cart', () => {",
+                  "    const stillExists = body.cart.some(i => {",
+                  "        const id = i.product?._id || i.product;",
+                  "        return id.toString() === productId;",
+                  "    });",
+                  "    pm.expect(stillExists).to.be.false;",
+                  "});",
+                  "",
+                  "console.log('Test 6 — Cart after remove:', body.cart.length, 'items remaining');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/cart/{{productId}}",
+            "description": "Removes the product from the cart. Expected: 200, item absent from cart array."
+          }
+        },
+
+        {
+          "name": "Test 7 — Unauthenticated Request — expect 401",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.request.headers.remove('Cookie');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('Response body indicates unauthorized', () => {",
+                  "    const msg = (body.message || '').toLowerCase();",
+                  "    pm.expect(msg).to.satisfy(m =>",
+                  "        m.includes('unauthorized') ||",
+                  "        m.includes('token') ||",
+                  "        m.includes('auth') ||",
+                  "        m.includes('login')",
+                  "    );",
+                  "});",
+                  "",
+                  "console.log('Test 7 — 401 received. Message:', body.message);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "",
+                "disabled": true,
+                "description": "Disabled intentionally — simulates unauthenticated user"
+              }
+            ],
+            "url": "{{baseUrl}}/cart",
+            "auth": { "type": "noauth" },
+            "description": "No cookie/token sent. Expected: 401 Unauthorized."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import { axiosInstance } from "../axiosCalls/axios";
 export const fetchCart = createAsyncThunk(
     "cart/fetchCart",
     async (_, { rejectWithValue }) => {
+        console.log("Fetching cart from backend...");
         try {
             const response = await axiosInstance.get("/cart");
             return response.data.cart || [];
