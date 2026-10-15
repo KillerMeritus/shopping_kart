@@ -22,7 +22,7 @@ app.use(express.json())
 app.use(cookieParser());
 
 
-const port = 1001
+const port = process.env.PORT || 1001;
 
 dotenv.config()
 
